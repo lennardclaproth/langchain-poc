@@ -1,0 +1,18 @@
+[project]
+name = "agent-store"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = ["fastapi", "fastmcp", "httpx", "sqlmodel"]
+
+[tool.server]
+host = "127.0.0.1"
+port = 8000
+reload = true
+
+[tool.apm]
+enable = true
+service-name = "agent-store"
+server-url = "http://localhost:8200"
+
+[project.scripts]
+agent-store = "app.main:run"

@@ -1,0 +1,14 @@
+[project]
+name = "agent-engine"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "langchain",
+    "langchain-ollama",
+    "ollama",
+    "langchain-mcp-adapters",
+    "fastapi",
+]
+
+[project.scripts]
+agent-engine = "main:run"

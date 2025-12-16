@@ -1,0 +1,16 @@
+version: '3.8'
+
+name: octobox-agentic
+
+services:
+  ollama:
+      image: ollama/ollama:latest
+      container_name: octobox-ollama
+      restart: always
+      ports:
+        - "11434:11434"
+      volumes:
+        - ollama_data:/root/.ollama
+
+volumes:
+  ollama_data:
