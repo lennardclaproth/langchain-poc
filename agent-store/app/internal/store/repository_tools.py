@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
-from sqlmodel import Session, select
+from sqlmodel import Sequence, Session, select
 
 from .schema import Tool, ToolEndpoint, ToolContract, ToolResponseSpec
 
@@ -85,3 +85,7 @@ class ToolRepository:
     def delete(self, tool: Tool) -> None:
         self.session.delete(tool)
         self.session.commit()
+
+    def get_all(self) -> Sequence[Tool]:
+        stmt = select(Tool).order_by(Tool.created_at.desc())
+        return list(self.session.exec(stmt).all())

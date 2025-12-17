@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from app.internal.store.db import get_session
-from app.contracts.contracts_agents import AgentCreate, AgentUpdate
+from app.contracts.contract_agents import AgentCreate, AgentUpdate
 from app.internal.store.schema import Agent, Tool
 from app.internal.services.service_agents import AgentService
 from app.internal.services.errors import NotFoundError, ConflictError, ValidationError

@@ -6,8 +6,6 @@ import uvicorn
 from .config.server_config import server_config
 from .internal.store import db
 from .api.routers import tools, agents, chats, messages
-from .internal.mcp.tool_subscriber import register_db_tools
-
 
 mcp = FastMCP("agent-store")
 
@@ -46,12 +44,14 @@ async def get_weather(location: str) -> str:
 
 mcp_app = mcp.http_app(path='/mcp')
 
+from app.internal.mcp.tool_subscriber import McpToolSubscriber
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with mcp_app.lifespan(mcp_app):
         db.init_db()
-        mcp._tool_manager.add_tool()
-        register_db_tools(mcp)
+        app.state.tool_sync = McpToolSubscriber(mcp)
+        await app.state.tool_sync.sync_all_enabled()
         yield
 
 app = FastAPI(title="agent-store", lifespan=lifespan)

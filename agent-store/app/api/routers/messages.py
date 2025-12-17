@@ -6,11 +6,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
-from app.db import get_session
-from app.contracts.contracts_messages import MessageCreate
+from app.internal.store.db import get_session
+from app.contracts.contract_messages import MessageCreate
 from app.internal.store.schema import Message
-from app.services.messages import MessageService
-from app.services.errors import NotFoundError
+from app.internal.services.service_messages import MessageService
+from app.internal.services.errors import NotFoundError
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 

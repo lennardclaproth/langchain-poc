@@ -21,10 +21,9 @@ class ToolCreate(BaseModel):
     description: str
     enabled: bool = True
 
-    endpoint: ToolEndpoint
-    contract: ToolContract = PydanticField(default_factory=ToolContract)
-    response: ToolResponseSpec = PydanticField(default_factory=ToolResponseSpec)
-
+    endpoint: Optional[ToolEndpoint] = None
+    contract: Optional[ToolContract] = None
+    response: Optional[ToolResponseSpec] = None
 
 class ToolUpdate(BaseModel):
     """
@@ -50,9 +49,9 @@ class ToolRead(BaseModel):
     description: str
     enabled: bool
 
-    endpoint: Dict[str, Any]
-    contract: Dict[str, Any]
-    response: Dict[str, Any]
+    endpoint: Optional[ToolEndpoint] = None
+    contract: Optional[ToolContract] = None
+    response: Optional[ToolResponseSpec] = None
 
     created_at: datetime
     updated_at: datetime
