@@ -16,7 +16,7 @@ def get_tool_service(
     request: Request,
     session: Session = Depends(get_session),
 ) -> ToolService:
-    sync = getattr(request.app.state, "tool_sync", None)
+    sync = getattr(request.app.state, "tool_engine", None)
     return ToolService(session, sync=sync)
 
 def get_agent_service(

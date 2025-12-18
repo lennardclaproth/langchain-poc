@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
 from fastapi import FastAPI
 from fastmcp import FastMCP
 import httpx
@@ -6,11 +7,13 @@ import uvicorn
 from .config.server_config import server_config
 from .internal.store import db
 from .api.routers import tools, agents, chats, messages
+from .internal.mcp.tool_compiler import ToolCompiler
 
 mcp = FastMCP("agent-store")
+compiler = ToolCompiler()
 
 @mcp.tool()
-async def get_weather(location: str) -> str:
+async def get_weather(location: Annotated[str, "The location of the item"]) -> str:
     """Get current weather for a location (via Open-Meteo, no API key)."""
     async with httpx.AsyncClient(timeout=10) as client:
         geo = await client.get(
@@ -44,14 +47,14 @@ async def get_weather(location: str) -> str:
 
 mcp_app = mcp.http_app(path='/mcp')
 
-from app.internal.mcp.tool_subscriber import McpToolSubscriber
+from app.internal.mcp.tool_engine import McpToolEngine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with mcp_app.lifespan(mcp_app):
         db.init_db()
-        app.state.tool_sync = McpToolSubscriber(mcp)
-        await app.state.tool_sync.sync_all_enabled()
+        app.state.tool_engine = McpToolEngine(mcp, compiler)
+        await app.state.tool_engine.sync_all_enabled()
         yield
 
 app = FastAPI(title="agent-store", lifespan=lifespan)
