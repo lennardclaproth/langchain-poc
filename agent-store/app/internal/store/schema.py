@@ -118,8 +118,9 @@ class Agent(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     name: str = Field(index=True)
     role: str
+    instructions: Optional[str]
     enabled: bool = Field(default=True, index=True)
-
+    
     model: Dict[str, Any] = Field(sa_column=Column(JSON), default_factory=dict)
     context_tool: Optional[Dict[str, Any]] = Field(sa_column=Column(JSON), default=None)
 
@@ -144,7 +145,6 @@ class Agent(SQLModel, table=True):
 
     def get_context_tool(self) -> Optional[AgentContextTool]:
         return None if self.context_tool is None else AgentContextTool.model_validate(self.context_tool)
-
 
 class Chat(SQLModel, table=True):
     __tablename__ = "chats"

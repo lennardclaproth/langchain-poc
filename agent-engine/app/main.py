@@ -8,6 +8,8 @@ from langchain_core.output_parsers import StrOutputParser
 
 from langchain.agents import create_agent
 
+from .api.routers import chats
+
 import uvicorn
 
 llm = ChatOllama(model="llama3.1:8b", base_url="http://192.168.178.42:11434")
@@ -27,7 +29,8 @@ prompt_with_tools = ChatPromptTemplate.from_messages([
     ("human", "{question}"),
 ])
 
-app = FastAPI(title="agent-store")
+app = FastAPI(title="agent-engine")
+app.include_router(chats.router, prefix="/api")
 
 @app.get("/api/chat-with-context")
 async def chat(message: str):
@@ -66,7 +69,7 @@ async def chat_with_tools(message: str):
 
 def run():
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host = "127.0.0.1",
         port = 8001,
         reload = True

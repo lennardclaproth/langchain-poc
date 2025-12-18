@@ -11,4 +11,4 @@ dependencies = [
 ]
 
 [project.scripts]
-agent-engine = "main:run"
+agent-engine = "app.main:run"

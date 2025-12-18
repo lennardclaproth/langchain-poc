@@ -39,6 +39,7 @@ class AgentService:
         agent = Agent(
             name=payload.name,
             role=payload.role,
+            instructions=payload.instructions,
             enabled=payload.enabled,
             created_at=utcnow(),
             updated_at=utcnow(),
@@ -80,9 +81,6 @@ class AgentService:
         self.repo.delete_links_for_agent(agent_id)
         self.repo.delete(agent)
 
-    # -------------------------
-    # Agent <-> Tool linking
-    # -------------------------
     def list_tools(self, agent_id: UUID):
         _ = self.get_agent(agent_id)
         return self.repo.list_tools(agent_id)
@@ -94,11 +92,10 @@ class AgentService:
             raise NotFoundError(resource="Tool", identifier=str(tool_id))
 
         if self.repo.is_tool_linked(agent_id, tool_id):
-            return  # idempotent
+            return
 
         self.repo.link_tool(agent_id, tool_id)
 
     def detach_tool(self, agent_id: UUID, tool_id: UUID) -> None:
         _ = self.get_agent(agent_id)
-        # idempotent unlink (no error if not linked)
         self.repo.unlink_tool(agent_id, tool_id)

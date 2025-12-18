@@ -12,6 +12,7 @@ class AgentCreate(BaseModel):
 
     name: str
     role: str
+    instructions: Optional[str] = None
     enabled: bool = True
 
     model: Optional[AgentModelConfig] = None
