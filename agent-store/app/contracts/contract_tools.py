@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field as PydanticField, ConfigDict, HttpUrl
+from pydantic import BaseModel, Field as PydanticField, ConfigDict, HttpUrl, model_validator
 
 from .spec_tools import ToolContract, ToolEndpoint, ToolResponseSpec
 
@@ -24,6 +24,12 @@ class ToolCreate(BaseModel):
     endpoint: Optional[ToolEndpoint] = None
     contract: Optional[ToolContract] = None
     response: Optional[ToolResponseSpec] = None
+
+    @model_validator(mode="after")
+    def validate_payload(self):
+        if not any([self.endpoint, self.contract, self.response]):
+            raise ValueError("At least one of endpoint/contract/response must be provided.")
+        return self
 
 class ToolUpdate(BaseModel):
     """
