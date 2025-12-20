@@ -11,8 +11,8 @@ from app.api.deps import get_tool_service
 router = APIRouter(prefix="/tools", tags=["tools"])
 
 @router.post("", status_code=201)
-def create_tool(payload: ToolCreate, svc: ToolService = Depends(get_tool_service)):
-    return svc.create_tool(payload)
+async def create_tool(payload: ToolCreate, svc: ToolService = Depends(get_tool_service)):
+    return await svc.create_tool(payload)
 
 @router.get("")
 def list_tools(service: ToolService = Depends(get_tool_service)):
@@ -23,10 +23,10 @@ def get_tool(tool_id: UUID, svc: ToolService = Depends(get_tool_service)):
     return svc.get_tool(tool_id)
 
 @router.patch("/{tool_id}")
-def update_tool(tool_id: UUID, payload: ToolUpdate, svc: ToolService = Depends(get_tool_service)):
-    return svc.update_tool(tool_id, payload)
+async def update_tool(tool_id: UUID, payload: ToolUpdate, svc: ToolService = Depends(get_tool_service)):
+    return await svc.update_tool(tool_id, payload)
 
 @router.delete("/{tool_id}", status_code=204)
-def delete_tool(tool_id: UUID, svc: ToolService = Depends(get_tool_service)):
-    svc.delete_tool(tool_id)
+async def delete_tool(tool_id: UUID, svc: ToolService = Depends(get_tool_service)):
+    await svc.delete_tool(tool_id)
     return None

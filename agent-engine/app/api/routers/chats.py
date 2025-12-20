@@ -26,20 +26,20 @@ async def run_agent(
     agent_id: UUID,
     message: str = Query(..., description="User message"),
 ):
-    try:
-        return await svc.run(agent_id=agent_id, message=message)
+    # try:
+    return await svc.run(agent_id=agent_id, message=message)
 
-    except AgentDisabled as e:
-        raise HTTPException(status_code=403, detail=str(e))
+    # except AgentDisabled as e:
+    #     raise HTTPException(status_code=403, detail=str(e))
 
-    except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+    # except PermissionError as e:
+    #     raise HTTPException(status_code=403, detail=str(e))
 
-    except ValueError as e:
-        # used for "not found" in the service example
-        raise HTTPException(status_code=404, detail=str(e))
+    # except ValueError as e:
+    #     # used for "not found" in the service example
+    #     raise HTTPException(status_code=404, detail=str(e))
 
-    except Exception as e:
-        # fallback
-        print(e)
-        raise HTTPException(status_code=500, detail=str(e))
+    # except Exception as e:
+    #     # fallback
+    #     print(e)
+    #     raise HTTPException(status_code=500, detail=str(e))

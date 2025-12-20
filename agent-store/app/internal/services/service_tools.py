@@ -32,10 +32,9 @@ class ToolService:
                 raise ValidationError("Internal transport requires endpoint.target")
 
         else:
-            # defensive: if ToolTransport expands, you'll notice here
             raise ValidationError(f"Unknown transport '{endpoint.transport}'")
 
-    def create_tool(self, payload: ToolCreate) -> Tool:
+    async def create_tool(self, payload: ToolCreate) -> Tool:
         existing = self.repo.get_by_name(payload.name)
         if existing:
             raise ConflictError(resource="Tool", field="name", value=payload.name)
@@ -51,9 +50,8 @@ class ToolService:
             response=payload.response,
         )
 
-        # Ensure DB write succeeded before syncing (repo.create should commit/flush)
         if self.sync:
-            self.sync.upsert(tool)
+            await self.sync.upsert(tool)
 
         return tool
 
@@ -63,7 +61,7 @@ class ToolService:
             raise NotFoundError(resource="Tool", identifier=str(tool_id))
         return tool
 
-    def update_tool(self, tool_id: UUID, payload: ToolUpdate) -> Tool:
+    async def update_tool(self, tool_id: UUID, payload: ToolUpdate) -> Tool:
         tool = self.get_tool(tool_id)
 
         if payload.name and payload.name != tool.name:
@@ -84,17 +82,16 @@ class ToolService:
         )
 
         if self.sync:
-            # if renamed, simplest is: remove old name then upsert new
-            self.sync.upsert(tool)
+            await self.sync.upsert(tool)
 
         return tool
 
     def get_all_tools(self) -> Sequence[Tool]:
         return self.repo.get_all()
 
-    def delete_tool(self, tool_id: UUID) -> None:
+    async def delete_tool(self, tool_id: UUID) -> None:
         tool = self.get_tool(tool_id)
         self.repo.delete(tool)
 
         if self.sync:
-            self.sync.remove(tool)
+            await self.sync.remove(tool)

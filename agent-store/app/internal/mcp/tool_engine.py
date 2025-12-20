@@ -13,6 +13,10 @@ from app.internal.store.schema import Tool as DbTool, ToolTransport
 
 from .tool_compiler import ToolCompiler
 
+from app.logging_config import get_logger
+
+logger = get_logger("app")
+
 class McpToolEngine:
     """The mcp tool engine is responsible for managing and constructing
     elements that are needed for the MCP server to be as dynamic as possible.
@@ -30,6 +34,7 @@ class McpToolEngine:
         with Session(db.engine) as session:
             tools = session.exec(select(DbTool).where(DbTool.enabled == True)).all()
         for t in tools:
+            logger.debug("Registering tool \"%s\"", t.name)
             await self.upsert(t)
 
     async def remove(self, tool: DbTool) -> None:

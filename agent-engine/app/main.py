@@ -5,12 +5,15 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
+from .api.middlewares.global_exception_handler import GlobalExceptionHandler
+from .api.middlewares.request_timing import RequestTimingMiddleware
 from langchain.agents import create_agent
-
+from .logging_config import setup_logging
 from .api.routers import chats
 
 import uvicorn
+
+setup_logging()
 
 llm = ChatOllama(model="llama3.1:8b", base_url="http://192.168.178.42:11434")
 
@@ -30,6 +33,13 @@ prompt_with_tools = ChatPromptTemplate.from_messages([
 ])
 
 app = FastAPI(title="agent-engine")
+app.add_middleware(RequestTimingMiddleware)
+app.add_middleware(
+    GlobalExceptionHandler,
+    include_traceback=False,
+    instance_base_url=None,
+    error_header_name="X-Error-Id",
+)
 app.include_router(chats.router, prefix="/api")
 
 @app.get("/api/chat-with-context")
@@ -72,7 +82,8 @@ def run():
         "app.main:app",
         host = "127.0.0.1",
         port = 8001,
-        reload = True
+        reload = True,
+        access_log=False,
     )
 
 if __name__ == "__main__":

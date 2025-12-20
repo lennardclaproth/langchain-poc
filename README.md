@@ -36,6 +36,13 @@ to install a model run the following command.
 docker exec <container_name_or_id> ollama pull <model>
 ```
 
+## Useful commands
+
+To generate a service layer from an open api spec.
+```bash
+npx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/api/store-client
+```
+
 ## Server configuration
 
 [container-toolkit-installation-guide-nvidia](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)

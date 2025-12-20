@@ -1,14 +1,17 @@
+<!-- src/components/atoms/Alert.vue -->
 <template>
-  <div class="alert" :class="`alert-${variant}`">
+  <div class="alert" :class="`alert-${variant}`" role="alert">
     <slot />
   </div>
 </template>
 
-<script setup>
-defineProps({
-  variant: {
-    type: String,
-    default: "danger",
-  },
-});
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    variant?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "light" | "dark";
+  }>(),
+  {
+    variant: "danger",
+  }
+);
 </script>

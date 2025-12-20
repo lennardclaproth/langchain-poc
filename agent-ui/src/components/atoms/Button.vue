@@ -1,3 +1,4 @@
+<!-- src/components/atoms/Button.vue -->
 <template>
   <component
     :is="as"
@@ -13,40 +14,33 @@
   </component>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps({
-  as: {
-    type: String,
-    default: "button", // button | a | RouterLink (passed in)
-  },
-  type: {
-    type: String,
-    default: "button", // button | submit | reset
-  },
-  variant: {
-    type: String,
-    default: "primary",
-    // primary | secondary | outline | danger | ghost
-  },
-  size: {
-    type: String,
-    default: "md", // sm | md | lg
-  },
-  block: {
-    type: Boolean,
-    default: false, // full width
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-});
+const props = withDefaults(
+  defineProps<{
+    as?: any; // 'button' | 'a' | RouterLink component
+    type?: "button" | "submit" | "reset";
+    variant?: "primary" | "secondary" | "outline" | "danger" | "ghost";
+    size?: "sm" | "md" | "lg";
+    block?: boolean;
+    disabled?: boolean;
+  }>(),
+  {
+    as: "button",
+    type: "button",
+    variant: "primary",
+    size: "md",
+    block: false,
+    disabled: false,
+  }
+);
 
-const emit = defineEmits(["click"]);
+const emit = defineEmits<{
+  (e: "click", event: MouseEvent): void;
+}>();
 
-function onClick(event) {
+function onClick(event: MouseEvent) {
   if (props.disabled) {
     event.preventDefault();
     return;
@@ -63,7 +57,7 @@ const computedClasses = computed(() => [
   },
 ]);
 
-function variantClass(v) {
+function variantClass(v: typeof props.variant) {
   switch (v) {
     case "secondary":
       return "btn-secondary";
@@ -78,7 +72,7 @@ function variantClass(v) {
   }
 }
 
-function sizeClass(s) {
+function sizeClass(s: typeof props.size) {
   if (s === "sm") return "btn-sm";
   if (s === "lg") return "btn-lg";
   return null;

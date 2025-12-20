@@ -24,6 +24,7 @@ class AgentUpdate(BaseModel):
 
     name: Optional[str] = None
     role: Optional[str] = None
+    instructions: Optional[str]
     enabled: Optional[bool] = None
 
     model: Optional[AgentModelConfig] = None
