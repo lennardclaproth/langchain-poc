@@ -27,5 +27,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] [1] Global error handling
 - [ ] [1] RAG support with vector db, think of how to seperate data from tenants/environments
 - [ ] [1] More reliable configuration
-- [ ] [2] UI
-- [ ] [3] APM
+- [ ] [2] APM
+- [ ] [3] UI

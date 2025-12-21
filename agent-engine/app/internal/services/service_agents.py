@@ -6,7 +6,9 @@ from uuid import UUID
 
 from app.internal.store.store_client import StoreClient, StoreClientNotFound, StoreClientForbidden, StoreClientError
 from app.internal.agents.builder import AgentBuilder, RuntimeConfig
-
+# from app.apm.client import client as elastic_client
+import elasticapm
+from elasticapm import capture_span
 
 class AgentDisabled(Exception):
     pass
@@ -30,8 +32,13 @@ class AgentRuntimeService:
         )
 
     async def run(self, agent_id: UUID, message: str) -> Dict[str, Any]:
+        elasticapm.label(agent_id=str(agent_id))
+        elasticapm.set_custom_context({"msg_len": len(message)})
+
         try:
-            agent = await self.store.get_agent(agent_id)
+            with capture_span("store.get_agent", span_type="store", span_subtype="agent_store"):
+                agent = await self.store.get_agent(agent_id)
+
         except StoreClientNotFound as e:
             raise ValueError(str(e))
         except StoreClientForbidden as e:
@@ -42,6 +49,10 @@ class AgentRuntimeService:
         if not agent.enabled:
             raise AgentDisabled(f"Agent {agent_id} is disabled")
 
-        runnable = await self.builder.build(agent)
-        answer = await runnable.ainvoke(message)
+        with capture_span("builder.build", span_type="agent", span_subtype="builder"):
+            runnable = await self.builder.build(agent)
+
+        with capture_span("runnable.ainvoke", span_type="llm", span_subtype="invoke"):
+            answer = await runnable.ainvoke(message)
+
         return {"agent_id": str(agent_id), "answer": answer}

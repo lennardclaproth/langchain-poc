@@ -16,6 +16,9 @@ from .internal.mcp.tool_engine import McpToolEngine
 from .api.middleware.request_timing import RequestTimingMiddleware
 from .api.middleware.global_exception_handler import GlobalExceptionHandler
 
+from elasticapm.contrib.starlette import ElasticAPM 
+from .apm.client import client as apm_client
+
 from .logging_config import get_logger, setup_logging
 
 setup_logging()
@@ -61,6 +64,7 @@ def create_app(*, engine=None) -> FastAPI:
         instance_base_url=None,
         error_header_name="X-Error-Id",
     )
+    app.add_middleware(ElasticAPM, client=apm_client)
     logger.info("Registering routers")
     app.include_router(tools.router)
     app.include_router(agents.router)

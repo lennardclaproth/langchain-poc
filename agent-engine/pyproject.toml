@@ -8,7 +8,18 @@ dependencies = [
     "ollama",
     "langchain-mcp-adapters",
     "fastapi",
+    "elastic-apm",
 ]
+
+[tool.server]
+host = "127.0.0.1"
+port = 8001
+reload = true
+
+[tool.apm]
+enable = true
+service-name = "agent-engine"
+server-url = "http://localhost:8200"
 
 [project.scripts]
 agent-engine = "app.main:run"

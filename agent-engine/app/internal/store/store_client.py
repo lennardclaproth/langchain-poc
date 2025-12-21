@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 import httpx
-
+import elasticapm
+from elasticapm import capture_span
 
 class StoreClientError(Exception):
     pass
@@ -69,26 +70,27 @@ class StoreClient:
     """
 
     def __init__(self, base_url: str, timeout_s: float = 15.0):
-        self.base_url = base_url.rstrip("/")
+        self.base_url = base_url
         self.timeout_s = timeout_s
+        self._client = httpx.AsyncClient(timeout=timeout_s)
+
+    async def aclose(self):
+        await self._client.aclose()
 
     async def get_agent(self, agent_id: UUID) -> AgentDTO:
         url = f"{self.base_url}/agents/{agent_id}"
-        async with httpx.AsyncClient(timeout=self.timeout_s) as client:
-            r = await client.get(url)
-
+        r = await self._client.get(url)
         if r.status_code == 404:
             raise StoreClientNotFound(f"Agent {agent_id} not found")
         if r.status_code == 403:
             raise StoreClientForbidden(f"Agent {agent_id} forbidden")
         r.raise_for_status()
-
-        return _agent_from_json(r.json())
-
+        data = r.json()
+        return _agent_from_json(data)
+    
     async def list_agent_tools(self, agent_id: UUID) -> List[ToolDTO]:
         url = f"{self.base_url}/agents/{agent_id}/tools"
-        async with httpx.AsyncClient(timeout=self.timeout_s) as client:
-            r = await client.get(url)
+        r = await self._client.get(url)
 
         if r.status_code == 404:
             raise StoreClientNotFound(f"Agent {agent_id} not found (tools)")
