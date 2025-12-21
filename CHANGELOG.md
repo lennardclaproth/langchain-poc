@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for multiple model providers (configurable)
 - Model selection per agent
 - A user interface
+- Performance monitoring using Elastic APM
 
 #### TODO
 
@@ -27,5 +28,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] [1] Global error handling
 - [ ] [1] RAG support with vector db, think of how to seperate data from tenants/environments
 - [ ] [1] More reliable configuration
-- [ ] [2] APM
+- [x] [2] APM
 - [ ] [3] UI
