@@ -1,4 +1,4 @@
-# OCTOBOX Agentic
+# Agentic
 
 ## Setting up development environment
 
