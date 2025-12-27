@@ -1,6 +1,6 @@
 <template>
-  <div class="card h-100 shadow-sm">
-    <div class="card-body d-flex flex-column">
+  <Card>
+    <div>
       <!-- Title + status -->
       <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
         <div>
@@ -80,11 +80,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script setup>
 import { computed } from "vue";
+import Card from "./atoms/Card.vue";
 
 const props = defineProps({
   tool: { type: Object, required: true },

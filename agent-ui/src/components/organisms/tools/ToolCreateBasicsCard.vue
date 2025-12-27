@@ -1,7 +1,6 @@
 <!-- src/components/organisms/tools/ToolBasicsEndpointCard.vue -->
 <template>
-  <div class="card">
-    <div class="card-body">
+  <Card>
       <h5 class="mb-3">Basics</h5>
       <FormField
         label="Name"
@@ -104,8 +103,7 @@
         </FormField>
 
       </div>
-    </div>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -118,6 +116,7 @@ import AppInput from "@/components/atoms/Input.vue";
 import AppSelect from "@/components/atoms/Select.vue";
 import AppTextarea from "@/components/atoms/Textarea.vue";
 import FormField from "@/components/molecules/FormField.vue";
+import Card from "@/components/atoms/Card.vue";
 
 type Transport = "http" | "mcp";
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";

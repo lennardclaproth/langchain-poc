@@ -1,6 +1,6 @@
 <template>
-  <div class="card">
-    <div class="card-body">
+  <Card>
+
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h5 class="mb-0">Contract</h5>
         <span class="text-muted small">Input schema builder</span>
@@ -9,51 +9,56 @@
       <!-- Top controls -->
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
-          <AppSelect
-            v-model="form.contract.schema_version"
-            label="Schema version"
-            :options="schemaVersionOptions"
-          />
+          <FormField label="Schema version">
+            <AppSelect
+              v-model="form.contract.schema_version"
+              :options="schemaVersionOptions"
+            />
+          </FormField>
         </div>
 
         <div class="col-6 col-md-3">
-          <AppSelect
-            v-model="form.contract.read_only"
-            label="Read-only"
-            :options="booleanOptions"
-          />
+          <FormField label="Read-only">
+            <AppSelect
+              v-model="form.contract.read_only"
+              :options="booleanOptions"
+            />
+          </FormField>
         </div>
 
         <div class="col-6 col-md-3">
-          <AppSelect
-            v-model="form.contract.idempotent"
-            label="Idempotent"
-            :options="booleanOptions"
-          />
+          <FormField label="Idempotent">
+            <AppSelect
+              v-model="form.contract.idempotent"
+              :options="booleanOptions"
+            />
+          </FormField>
         </div>
       </div>
 
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
-          <AppInput
-            v-model="form.tagsText"
-            label="Tags (comma-separated)"
-            placeholder="jsonplaceholder, posts"
-          />
+          <FormField label="Tags (comma-separated)">
+            <AppInput
+              v-model="form.tagsText"
+              placeholder="jsonplaceholder, posts"
+            />
+          </FormField>
         </div>
 
         <div class="col-12 col-md-6">
-          <AppInput
-            v-model.number="form.contract.cache_ttl_seconds"
-            type="number"
-            :min="0"
-            label="Cache TTL (seconds)"
-            placeholder="Only allowed for read-only + idempotent"
-            :disabled="!(form.contract.read_only && form.contract.idempotent)"
-            :help="!(form.contract.read_only && form.contract.idempotent)
-              ? 'Enabled only when read-only=true and idempotent=true.'
-              : ''"
-          />
+          <FormField label="Cache TTL (seconds)">
+            <AppInput
+              v-model.number="form.contract.cache_ttl_seconds"
+              type="number"
+              :min="0"
+              placeholder="Only allowed for read-only + idempotent"
+              :disabled="!(form.contract.read_only && form.contract.idempotent)"
+              :help="!(form.contract.read_only && form.contract.idempotent)
+                ? 'Enabled only when read-only=true and idempotent=true.'
+                : ''"
+            />
+          </FormField>
         </div>
       </div>
 
@@ -63,14 +68,12 @@
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h6 class="mb-0">Input properties</h6>
         <AppButton
-          variant="outline-primary"
-          size="sm"
+          variant="primary"
           type="button"
-          class="d-flex align-items-center gap-2"
+          class="rounded-circle"
           @click="addProp"
         >
-          <AppIcon name="bi-plus-lg" />
-          <span>Add property</span>
+          <AppIcon name="plus-lg" />
         </AppButton>
       </div>
 
@@ -78,67 +81,84 @@
         No properties yet. Add one (e.g. <span class="font-monospace">id</span>).
       </div>
 
-      <div
+      <Card
         v-for="(p, idx) in form.propsList"
         :key="p._key"
-        class="border rounded p-3 mb-3"
+        class="mb-3"
       >
         <div class="d-flex align-items-center justify-content-between mb-2">
           <div class="fw-semibold">Property #{{ idx + 1 }}</div>
-          <AppButton variant="outline-danger" size="sm" type="button" @click="removeProp(idx)">
-            <AppIcon name="bi-trash" />
+          <AppButton variant="danger" size="sm" type="button" class="rounded-circle" @click="removeProp(idx)">
+            <AppIcon name="trash" />
           </AppButton>
         </div>
 
         <div class="row g-3">
           <div class="col-12 col-md-4">
-            <AppInput v-model.trim="p.name" label="Name" placeholder="id" />
+            <FormField label="Name">
+              <AppInput v-model.trim="p.name" placeholder="id" />
+            </FormField>
           </div>
 
           <div class="col-12 col-md-4">
-            <AppSelect v-model="p.type" label="Type" :options="jsonTypeOptions" />
+            <FormField label="Type">
+              <AppSelect v-model="p.type" :options="jsonTypeOptions" />
+            </FormField>
           </div>
 
           <div class="col-12 col-md-4">
-            <div class="mt-4 pt-2">
-              <AppCheckbox v-model="p.required" :id="`req-${p._key}`" label="Required" />
-            </div>
+              <FormField label="Required">
+                <AppCheckbox v-model="p.required" :id="`req-${p._key}`" />
+              </FormField>
           </div>
 
           <div class="col-12">
-            <AppInput v-model.trim="p.description" label="Description" placeholder="ID of the post to fetch" />
+            <FormField label="Description">
+              <AppInput v-model.trim="p.description" placeholder="ID of the post to fetch" />
+            </FormField>
           </div>
 
           <div class="col-12 col-md-6">
-            <AppInput
-              v-model="p.defaultJson"
-              label="Default (JSON)"
-              placeholder='null or "abc" or 1'
-              monospace
-            />
+            <FormField label="Default (JSON)">
+              <AppInput
+                v-model="p.defaultJson"
+                placeholder='null or "abc" or 1'
+                monospace
+              />
+            </FormField>
           </div>
 
           <div class="col-12 col-md-6">
-            <AppInput v-model="p.enumText" label="Enum (comma-separated)" placeholder="optional" />
+            <FormField label="Enum (comma-separated)">
+              <AppInput v-model="p.enumText" placeholder="optional" />
+            </FormField>
           </div>
 
           <!-- string constraints -->
           <template v-if="p.type === 'string'">
             <div class="col-6 col-md-3">
-              <AppInput v-model.number="p.minLength" type="number" :min="0" label="minLength" />
+              <FormField label="minLength">
+                <AppInput v-model.number="p.minLength" type="number" :min="0" />
+              </FormField>
             </div>
             <div class="col-6 col-md-3">
-              <AppInput v-model.number="p.maxLength" type="number" :min="0" label="maxLength" />
+              <FormField label="maxLength">
+                <AppInput v-model.number="p.maxLength" type="number" :min="0" />
+              </FormField>
             </div>
           </template>
 
           <!-- numeric constraints -->
           <template v-if="p.type === 'integer' || p.type === 'number'">
             <div class="col-6 col-md-3">
-              <AppInput v-model.number="p.minimum" type="number" label="minimum" />
+              <FormField label="minimum">
+                <AppInput v-model.number="p.minimum" type="number" />
+              </FormField>
             </div>
             <div class="col-6 col-md-3">
-              <AppInput v-model.number="p.maximum" type="number" label="maximum" />
+              <FormField label="maximum">
+                <AppInput v-model.number="p.maximum" type="number" />
+              </FormField>
             </div>
           </template>
 
@@ -146,21 +166,24 @@
           <template v-if="p.type === 'array'">
             <div class="col-12">
               <div class="small text-muted mb-1">Items</div>
-              <div class="border rounded p-2 bg-light">
+              <Card class="bg-light">
                 <div class="row g-2">
                   <div class="col-12 col-md-4">
-                    <AppSelect
-                      v-model="p.items.type"
-                      label="Type"
-                      :options="arrayItemTypeOptions"
-                      size="sm"
-                    />
+                    <FormField label="Type">
+                      <AppSelect
+                        v-model="p.items.type"
+                        :options="arrayItemTypeOptions"
+                        size="sm"
+                      />
+                    </FormField>
                   </div>
                   <div class="col-12 col-md-8">
-                    <AppInput v-model.trim="p.items.description" label="Description" size="sm" />
+                    <FormField label="Description">
+                      <AppInput v-model.trim="p.items.description" size="sm" />
+                    </FormField>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </template>
 
@@ -169,7 +192,7 @@
             <div class="col-12">
               <div class="d-flex align-items-center justify-content-between mb-1">
                 <div class="small text-muted">Nested properties (optional)</div>
-                <AppButton variant="outline-secondary" size="sm" type="button" @click="addNestedProp(p)">
+                <AppButton variant="secondary" size="sm" type="button" @click="addNestedProp(p)">
                   Add nested
                 </AppButton>
               </div>
@@ -185,25 +208,33 @@
               >
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <div class="small fw-semibold">Nested #{{ nidx + 1 }}</div>
-                  <AppButton variant="outline-danger" size="sm" type="button" @click="removeNestedProp(p, nidx)">
+                  <AppButton variant="danger" size="sm" type="button" @click="removeNestedProp(p, nidx)">
                     <AppIcon name="bi-trash" />
                   </AppButton>
                 </div>
 
                 <div class="row g-2">
                   <div class="col-12 col-md-4">
-                    <AppInput v-model.trim="np.name" label="Name" size="sm" />
+                    <FormField label="Name">
+                      <AppInput v-model.trim="np.name" size="sm" />
+                    </FormField>
                   </div>
                   <div class="col-12 col-md-4">
-                    <AppSelect v-model="np.type" label="Type" :options="nestedTypeOptions" size="sm" />
+                    <FormField label="Type">
+                      <AppSelect v-model="np.type" :options="nestedTypeOptions" size="sm" />
+                    </FormField>
                   </div>
                   <div class="col-12 col-md-4">
                     <div class="mt-4 pt-1">
-                      <AppCheckbox v-model="np.required" :id="`nreq-${np._key}`" label="Required" />
+                      <FormField label="Required">
+                        <AppCheckbox v-model="np.required" :id="`nreq-${np._key}`" />
+                      </FormField>
                     </div>
                   </div>
                   <div class="col-12">
-                    <AppInput v-model.trim="np.description" label="Description" size="sm" />
+                    <FormField label="Description">
+                      <AppInput v-model.trim="np.description" size="sm" />
+                    </FormField>
                   </div>
                 </div>
               </div>
@@ -214,7 +245,7 @@
             </div>
           </template>
         </div>
-      </div>
+      </Card>
 
       <div class="small text-muted">
         Required keys:
@@ -234,17 +265,22 @@
           />
         </div>
         <div class="col-12 col-md-6">
-          <AppInput v-model="form.httpText.query" label="Query params" placeholder="id" />
+          <FormField label="Query params">
+            <AppInput v-model="form.httpText.query" placeholder="id" />
+          </FormField>
         </div>
         <div class="col-12 col-md-6">
-          <AppInput v-model="form.httpText.json" label="JSON body fields" placeholder="title, body" />
+          <FormField label="JSON body fields">
+            <AppInput v-model="form.httpText.json" placeholder="title, body" />
+          </FormField>
         </div>
         <div class="col-12 col-md-6">
-          <AppInput v-model="form.httpText.form" label="Form fields" placeholder="file" />
+          <FormField label="Form fields">
+            <AppInput v-model="form.httpText.form" placeholder="file" />
+          </FormField>
         </div>
       </div>
-    </div>
-  </div>
+    </Card>
 </template>
 
 <script setup lang="ts">
@@ -257,6 +293,8 @@ import AppDivider from "@/components/atoms/Divider.vue";
 import AppIcon from "@/components/atoms/Icon.vue";
 import AppInput from "@/components/atoms/Input.vue";
 import AppSelect from "@/components/atoms/Select.vue";
+import Card from "@/components/atoms/Card.vue";
+import FormField from "@/components/molecules/FormField.vue";
 
 type JsonType = "" | "string" | "integer" | "number" | "boolean" | "object" | "array";
 type ArrayItemType = "string" | "integer" | "number" | "boolean" | "object";
@@ -315,23 +353,41 @@ const form = reactive<ToolCreateContractBuilderDraft>({
   propsList: props.modelValue.propsList ?? [],
 });
 
+let isSyncingFromProps = false;
+
 watch(
   () => props.modelValue,
   (v) => {
+    isSyncingFromProps = true;
+
+    // patch fields (don’t replace the whole reactive object)
     form.contract.schema_version = v.contract?.schema_version ?? "jsonschema-2020-12";
     form.contract.read_only = v.contract?.read_only ?? false;
     form.contract.idempotent = v.contract?.idempotent ?? false;
     form.contract.cache_ttl_seconds = v.contract?.cache_ttl_seconds ?? 0;
+
     form.tagsText = v.tagsText ?? "";
-    form.httpText = v.httpText ?? { query: "", json: "", form: "", path: "" };
-    form.propsList = v.propsList ?? [];
+
+    // patch object fields
+    const http = v.httpText ?? { query: "", json: "", form: "", path: "" };
+    form.httpText.query = http.query ?? "";
+    form.httpText.json = http.json ?? "";
+    form.httpText.form = http.form ?? "";
+    form.httpText.path = http.path ?? "";
+
+    // IMPORTANT: mutate the existing array instead of replacing it
+    form.propsList.splice(0, form.propsList.length, ...(v.propsList ?? []));
+
+    isSyncingFromProps = false;
   },
-  { deep: true }
+  { deep: true, immediate: true }
 );
 
 watch(
   form,
   () => {
+    if (isSyncingFromProps) return;
+
     emit("update:modelValue", {
       contract: { ...form.contract },
       tagsText: form.tagsText,
@@ -342,10 +398,11 @@ watch(
   { deep: true }
 );
 
-// TTL rule: when invalid, clear it (UX)
+// TTL rule (also guard it, so it doesn’t bounce)
 watch(
   () => [form.contract.read_only, form.contract.idempotent] as const,
   ([ro, idem]) => {
+    if (isSyncingFromProps) return;
     if (!(ro && idem)) form.contract.cache_ttl_seconds = 0;
   }
 );

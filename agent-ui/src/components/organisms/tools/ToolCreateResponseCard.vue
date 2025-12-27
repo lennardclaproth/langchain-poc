@@ -1,7 +1,6 @@
 <!-- src/components/organisms/tools/ToolResponseCard.vue -->
 <template>
-  <div class="card mb-3">
-    <div class="card-body">
+  <Card>
       <h5 class="mb-3">Response</h5>
 
       <AppSelect
@@ -19,8 +18,7 @@
         placeholder='{"type":"object","properties":{...}}'
         help="Optional, but useful for validation and UI."
       />
-    </div>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -29,6 +27,7 @@ import { reactive, watch } from "vue";
 // Atoms (adjust import paths)
 import AppSelect from "@/components/atoms/Select.vue";
 import AppTextarea from "@/components/atoms/Textarea.vue";
+import Card from "@/components/atoms/Card.vue";
 
 export type ToolCreateResponseDraft = {
   format: "json" | "text";

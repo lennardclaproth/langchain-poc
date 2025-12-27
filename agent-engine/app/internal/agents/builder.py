@@ -62,7 +62,7 @@ def _build_llm(agent: AgentDTO) -> Any:
 
     model = cfg.get("model") or "llama3.1:8b"
 
-    base_url = "http://192.168.178.42:11434"
+    base_url = "http://localhost:11434"
 
     temperature = cfg.get("temperature", None)
     temperature_f = float(temperature) if temperature is not None else None
