@@ -49,3 +49,11 @@ npx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/api/store-c
 [docker-installation-guide-ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 
 for gpu support in ollama on docker make sure you enable the **--gpus=all** flag when running the ollama container or add the **gpus: all** to the docker-compose.yml
+
+## Test setup
+
+Make sure you install pytest after setting up the virtual environment
+
+``` bash
+python -m pip install pytest pytest-asyncio httpx asgi-lifespan
+```

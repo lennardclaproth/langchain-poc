@@ -1,7 +1,8 @@
 .venv
-.vscode
 agent_store.egg-info
 agent_engine.egg-info
 __pycache__
 */*.db
 *.db
+.pytest_cache
+.DS_Store
