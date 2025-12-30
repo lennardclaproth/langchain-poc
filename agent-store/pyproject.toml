@@ -1,12 +1,12 @@
 [project]
 name = "agent-store"
 version = "0.1.0"
-requires-python = ">=3.14"
-dependencies = ["fastapi", "fastmcp", "httpx", "sqlmodel", "elastic-apm"]
+requires-python = ">=3.12"
+dependencies = ["fastapi", "fastmcp", "httpx", "sqlmodel", "elastic-apm", "chromadb"]
 
 [tool.server]
 host = "127.0.0.1"
-port = 8000
+port = 8002
 reload = true
 
 [tool.apm]

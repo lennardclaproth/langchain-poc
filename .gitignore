@@ -1,4 +1,4 @@
-.venv
+.venv*
 agent_store.egg-info
 agent_engine.egg-info
 __pycache__

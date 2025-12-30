@@ -1,4 +1,3 @@
-# app/main.py
 from contextlib import asynccontextmanager
 
 from fastapi.responses import JSONResponse
@@ -7,9 +6,9 @@ from fastapi import FastAPI, Request
 from fastmcp import FastMCP
 
 from .config.server_config import server_config
-from .internal.store import db
+from .internal.store import db, db_vector
 
-from .api.routers import tools, agents, chats, messages
+from .api.routers import tools, agents, chats, messages, vectors
 from .internal.mcp.tool_compiler import ToolCompiler
 from .internal.mcp.tool_engine import McpToolEngine
 
@@ -44,12 +43,13 @@ def create_app(*, engine=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         async with mcp_app.lifespan(mcp_app):
-            logger.info("Initializing database")
+            logger.info("Initializing databases")
             db.init_db()
+            vector_client = db_vector.init_chroma()
             logger.info("Setting application state")
             app.state.tool_engine = McpToolEngine(mcp, compiler)
             app.state.mcp_app = mcp_app
-
+            app.state.vector_client = vector_client
             logger.info("Syncing MCP Tools")
             await app.state.tool_engine.sync_all_enabled()
             yield
@@ -70,6 +70,7 @@ def create_app(*, engine=None) -> FastAPI:
     app.include_router(agents.router)
     app.include_router(chats.router)
     app.include_router(messages.router)
+    app.include_router(vectors.router)
     
     logger.info("Mounting MCP server")
     app.mount("/", mcp_app)

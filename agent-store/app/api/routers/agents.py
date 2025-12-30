@@ -25,7 +25,7 @@ def _raise_http(err: Exception) -> None:
     raise err
 
 
-@router.get("", response_model=List[Agent])
+@router.get("", response_model=List[Agent], status_code=200, response_model_exclude_none=True)
 def list_agents(
     enabled: Optional[bool] = None,
     session: Session = Depends(get_session),
@@ -34,7 +34,7 @@ def list_agents(
     return svc.list_agents(enabled=enabled)
 
 
-@router.get("/{agent_id}", response_model=Agent)
+@router.get("/{agent_id}", response_model=Agent, status_code=200, response_model_exclude_none=True)
 def get_agent(agent_id: UUID, session: Session = Depends(get_session)):
     svc = AgentService(session)
     try:
@@ -43,7 +43,7 @@ def get_agent(agent_id: UUID, session: Session = Depends(get_session)):
         _raise_http(e)
 
 
-@router.post("", response_model=Agent)
+@router.post("", response_model=Agent, status_code=201, response_model_exclude_none=True)
 def create_agent(payload: AgentCreate, session: Session = Depends(get_session)):
     svc = AgentService(session)
     try:
@@ -52,7 +52,7 @@ def create_agent(payload: AgentCreate, session: Session = Depends(get_session)):
         _raise_http(e)
 
 
-@router.patch("/{agent_id}", response_model=Agent)
+@router.patch("/{agent_id}", response_model=Agent, response_model_exclude_none=True)
 def update_agent(agent_id: UUID, payload: AgentUpdate, session: Session = Depends(get_session)):
     svc = AgentService(session)
     try:
@@ -71,7 +71,7 @@ def delete_agent(agent_id: UUID, session: Session = Depends(get_session)):
         _raise_http(e)
 
 
-@router.get("/{agent_id}/tools", response_model=List[Tool])
+@router.get("/{agent_id}/tools", response_model=List[Tool], status_code=200, response_model_exclude_none=True)
 def list_agent_tools(agent_id: UUID, session: Session = Depends(get_session)):
     svc = AgentService(session)
     try:

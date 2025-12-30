@@ -57,3 +57,8 @@ Make sure you install pytest after setting up the virtual environment
 ``` bash
 python -m pip install pytest pytest-asyncio httpx asgi-lifespan
 ```
+
+## Resources
+
+1. [Langchain](https://docs.langchain.com/)
+2. [ChromaDB](https://docs.trychroma.com/docs/overview/introduction)

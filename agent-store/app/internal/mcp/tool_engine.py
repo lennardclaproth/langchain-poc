@@ -1,5 +1,6 @@
 # app/internal/mcp/tool_engine.py
 from __future__ import annotations
+import http
 from typing import Any
 from fastmcp import FastMCP
 import httpx
@@ -9,7 +10,9 @@ from sqlmodel import Session, select
 from fastmcp.tools.tool import Tool
 
 from app.internal.store import db
-from app.internal.store.schema import Tool as DbTool, ToolTransport
+from app.internal.tools import registry
+from app.internal.store.schema import Tool as DbTool
+from app.contracts.spec_tools import ToolEndpoint, ToolTransport
 
 from .tool_compiler import ToolCompiler
 
@@ -61,14 +64,15 @@ class McpToolEngine:
             tool: the tool to be converted to an MCP server tool.
         """
         await self.remove(tool)
-
+        # Return early if the tool is not enabled
         if not tool.enabled:
             return
-
+        # Compile the function tool
         fn = self.compiler.compile_tool_fn(tool, dispatch=self._dispatch)
         fn.__name__ = tool.name
         fn.__doc__ = tool.description or ""
-
+        # Calls the from_function helper of FastMCP to create a tool
+        # from the compiled function
         mcp_tool = Tool.from_function(
             fn,
             name=tool.name,
@@ -98,24 +102,41 @@ class McpToolEngine:
             RuntimeError: If the transport type doesn't match the implemented transport types.
             HttpStatusError: If the http request does not have a status code success.
         """
-        ep = tool.endpoint or {}
-        transport = ep.get("transport")
+        # Get the endpoint definition and transport type from the tool.
+        try:
+            endpoint: ToolEndpoint = tool.get_endpoint()
+            transport: ToolTransport = endpoint.transport
+        except Exception as e:
+            raise RuntimeError(f"Failed to parse tool endpoint for tool {tool.name}: {str(e)}") from e
 
         # If the transport is http, build a http request and send the
         # request, wait for the response and return the response.
         if transport == ToolTransport.http:
-            method = (ep.get("method") or "POST").upper()
-            url = ep["url"]
-            headers = ep.get("headers") or {}
-            timeout = ep.get("timeout", 15)
+            method = endpoint.method
+            url = endpoint.url
+            headers = endpoint.headers
+            timeout = endpoint.timeout or 10.0
 
             async with httpx.AsyncClient(timeout=timeout) as client:
-                if method == "GET":
+                if method == http.HTTPMethod.GET:
                     r = await client.request(method, url, params=args, headers=headers)
                 else:
                     r = await client.request(method, url, json=args, headers=headers)
                 r.raise_for_status()
-                return r.json() if "application/json" in (r.headers.get("content-type") or "") else r.text
+                return await r.json() if "application/json" in (r.headers.get("content-type") or "") else r.text
+        # If the transport type is internal, look up the internal tool in the registry
+        # and call its function with the provided arguments.
+        if transport == ToolTransport.internal:
+            # Get the internal tool key from the endpoint definition
+            internal_key = endpoint.target
+            if not internal_key:
+                raise RuntimeError("Internal tool missing 'target' in endpoint definition.")
+            # Look up in registry
+            internal_tool_def = registry.get_internal_tool(internal_key)
+            if not internal_tool_def:
+                raise RuntimeError(f"Unknown internal tool: {internal_key}")
+            # Call tool with unpacked arguments
+            args = {**args, **(endpoint.static_inputs or {})}
+            return await internal_tool_def.fn(**args)
 
-        # TODO: ToolTransport.mcp / internal
         raise RuntimeError(f"Unsupported transport: {transport}")

@@ -1,4 +1,3 @@
-# app/api/v1/chat.py
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
@@ -15,8 +14,8 @@ router = APIRouter(tags=["chat"])
 # but this is the simplest working version.
 svc = AgentRuntimeService(
     AgentRuntimeServiceConfig(
-        agent_store_base_url="http://localhost:8000",
-        mcp_url="http://localhost:8000/mcp",
+        agent_store_base_url="http://localhost:8002",
+        mcp_url="http://localhost:8002/mcp",
     )
 )
 

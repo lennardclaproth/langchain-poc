@@ -10,10 +10,22 @@ from pydantic import BaseModel, Field, ConfigDict, HttpUrl, field_validator, mod
 JsonType = Literal["string", "integer", "number", "boolean", "object", "array"]
 
 class JsonSchemaProperty(BaseModel):
+    """
+    JsonSchema property definition, it provides an interface with which
+    we define the expected inputs and outputs of a tool.
+
+    NOTE: For more information on the fields, see: https://json-schema.org/understanding-json-schema/
+    2020-12 specification.
+    """
     type: Optional[JsonType] = None
     description: Optional[str] = None
     enum: Optional[List[Any]] = None
     default: Optional[Any] = None
+    # Defines a constant field value, this can only be set in the code
+    const: Optional[Any] = None
+    # Static value for this property, useful for injecting fixed values via tool contracts.
+    # This is not part of the JSON Schema spec and therefore prefixed with 'x_'
+    x_static: Optional[Any] = None
 
     # simple constraints (extend anytime)
     minLength: Optional[int] = None
@@ -57,6 +69,11 @@ class JsonSchemaProperty(BaseModel):
         # enum sanity
         if self.enum is not None and len(self.enum) == 0:
             raise ValueError("enum cannot be an empty list")
+
+        # const/type consistency
+        if self.const is not None and self.type is not None:
+            if not _is_instance_for_json_type(self.const, self.type):
+                raise ValueError(f"const must match type '{self.type}'")
 
         return self
 
@@ -119,12 +136,22 @@ def _validate_value_against_property(value: Any, prop: JsonSchemaProperty, path:
     if isinstance(value, list) and prop.items is not None:
         for idx, item in enumerate(value):
             errs.extend(_validate_value_against_property(item, prop.items, f"{path}[{idx}]"))
+    
+    # const check
+    if prop.const is not None and value != prop.const:
+        errs.append(f"{path}: must equal const {prop.const}")
 
     return errs
 
 class ToolInputSchema(BaseModel):
+    """
+    The input schema for a tool contract. This is what is used by the LLM to
+    understand what inputs to provide to the tool.
+    """
     type: Literal["object"] = "object"
+    # Properties is a dictionary mapping property names to their JsonSchemaProperty definitions
     properties: Dict[str, JsonSchemaProperty] = Field(default_factory=dict)
+    # List of required property names
     required: List[str] = Field(default_factory=list)
     additionalProperties: bool = False
 
@@ -138,8 +165,8 @@ class ToolInputSchema(BaseModel):
 
 class HttpBinding(BaseModel):
     """
-    Optional: explicit mapping of inputs -> HTTP request parts.
-    If omitted, your dispatcher can default: GET->query, others->json.
+    Denotes how the tool's input schema maps to HTTP request components. i.e. which 
+    input schema properties go into query params, JSON body, form data, or path params.
     """
     query: List[str] = Field(default_factory=list)
     json: List[str] = Field(default_factory=list)
@@ -161,6 +188,8 @@ class HttpBinding(BaseModel):
 class ToolContract(BaseModel):
     schema_version: Literal["jsonschema-2020-12", "jsonschema-draft-07"] = "jsonschema-2020-12"
     input_schema: ToolInputSchema
+    # The binding of the external http service. This is optional but required when 
+    # the tool uses http transport. Denotes where the input schema is used.
     http: Optional[HttpBinding] = None
     tags: List[str] = Field(default_factory=list)
     examples: List[Dict[str, Any]] = Field(default_factory=list)
@@ -271,10 +300,19 @@ class ToolContract(BaseModel):
 
 class ToolResponseSpec(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
+    # The JSON schema defining the response structure
     json_schema: Dict[str, Any] = Field(default_factory=dict, alias="schema")
+    # The format of the response, e.g. text, json, xml, etc.
     format: str = "text"
 
 class ToolTransport(str, Enum):
+    """
+    The different transport mechanisms a tool can use.
+
+    - http: standard HTTP calls
+    - mcp: MCP protocol calls
+    - internal: internal function calls
+    """
     http = "http"
     mcp = "mcp"
     internal = "internal"
@@ -282,17 +320,27 @@ class ToolTransport(str, Enum):
 HttpMethod = Literal["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
 
 class ToolEndpoint(BaseModel):
-    transport: ToolTransport
+    """
+    The endpoint configuration for a tool.
+    
+    There are 3 different transport types supported: http, mcp, internal.
 
+    NOTE: Depending on the transport, different fields are required.
+    """
+    # The transport the tool does, at the moment there are three supported transports
+    transport: ToolTransport
+    # http specific fields
     url: Optional[HttpUrl] = None
     method: Optional[HttpMethod] = None
     headers: Dict[str, str] = Field(default_factory=dict)
-
+    timeout: Optional[float] = None
+    # mcp protocol specific fields
     mcp_server: Optional[str] = None
     mcp_tool: Optional[str] = None
-
-    target: Optional[str] = None
-
+    # internal tool specific fields
+    target: Optional[str] = None # name of the internal tool to call
+    static_inputs: Dict[str, Any] = Field(default_factory=dict) # static inputs to inject these map to values in the contract
+    
     @model_validator(mode="after")
     def validate_transport_specific_fields(self):
         if self.transport == ToolTransport.http:
@@ -310,7 +358,11 @@ class ToolEndpoint(BaseModel):
             return self
         
         if self.transport == ToolTransport.internal:
-            raise NotImplementedError()
+            if not self.target:
+                raise ValueError("For transport='internal', 'target' is required.")
+            if self.url or self.method or self.mcp_server or self.mcp_tool:
+                raise ValueError("For transport='internal', HTTP and MCP fields must be null.")
+            return self
 
     @field_validator("method")
     @classmethod

@@ -23,10 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### TODO
 
 - [ ] [1] middleware, intercept messages and save them in the store
+- [ ] [1] Cleanup store
 - [x] [1] Fix dynamic tool loading
 - [x] [1] Logging
 - [x] [1] Global error handling
 - [ ] [1] RAG support with vector db, think of how to seperate data from tenants/environments
+- [ ] [1] Support for different providers
 - [ ] [1] More reliable configuration
 - [x] [2] APM
 - [ ] [3] UI

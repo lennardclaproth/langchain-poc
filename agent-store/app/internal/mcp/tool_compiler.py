@@ -68,19 +68,32 @@ class ToolCompiler:
         input_schema = contract.get("input_schema") or {}
         # Get the properties from the input schema
         props: dict[str, dict[str, Any]] = input_schema.get("properties", {}) or {}
+        # Decide propertie are static or dynamic. If it has static
+        # data it either uses "const" or "x_static" to indicate
+        # that the property is static.
+        static_props: dict[str, dict[str, Any]] = {}
+        dynamic_props: dict[str, dict[str, Any]] = {}
+        for raw, spec in props.items():
+            is_static = ("const" in spec and spec["const"] is not None) or bool(spec.get("x_static"))
+            if is_static:
+                static_props[raw] = spec
+            else:
+                dynamic_props[raw] = spec
         # Get the required properties from the input schema. These are
         # mandatory fields described by the user.
         required = set(input_schema.get("required", []) or [])
         # Creates a name map and sanitizes the variable names for use
-        # in the compile function.
+        # in the compile function. This map will only contain dynamic
+        # properties as static properties are not passed into the compiled 
+        # tool function.
         name_map: dict[str, str] = {raw: self._safe_ident(raw) for raw in props.keys()}
 
         annotations_map: dict[str, Any] = {}
         parameters: list[inspect.Parameter] = []
 
-        # Loop over all properties and construct the parameters for the
+        # Loop over all dynamic properties and construct the parameters for the
         # function.
-        for raw, spec in props.items():
+        for raw, spec in dynamic_props.items():
             # Get the raw variable name, this is the variable name
             # python is able to understand
             py_name = name_map[raw]
@@ -122,6 +135,13 @@ class ToolCompiler:
             # Populate function parameters with the values
             # passed into the function
             packed: dict[str, Any] = {}
+            # Inject static properties first into the function
+            for raw, spec in static_props.items():
+                if "const" in spec:
+                    packed[raw] = spec["const"]
+                elif "x_static" in spec:
+                    packed[raw] = spec["x_static"]
+            # Inject dynamic properties into the function
             for raw, py_name in name_map.items():
                 val = bound.arguments.get(py_name)
                 if val is not None:
@@ -129,7 +149,7 @@ class ToolCompiler:
             # call the injected function and return the result
             return await dispatch(tool, packed)
 
-        # Set the signature and annotation of the implemantation
+        # Set the signature and annotation of the implementation
         # function
         _impl.__signature__ = sig  # type: ignore[attr-defined]
         _impl.__annotations__ = annotations_map

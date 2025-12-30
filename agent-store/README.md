@@ -8,7 +8,7 @@ run the following command from within the virtual environment.
 uvicorn main:app --reload --port 8000
 ```
 
-## Simple tool
+## Simple HTTP tool
 
 To create a simple tool you can use the following json schema:
 
@@ -225,6 +225,25 @@ To create a simple tool you can use the following json schema:
       "additionalProperties": true
     },
     "format": "json"
+  }
+}
+```
+
+## Simple internal tool
+
+To create a simple internal tool:
+
+```json
+{
+  "name": "My Debug Printer",
+  "description": "A tool for printing debug messages to the console",
+  "enabled": true,
+  "endpoint": {
+    "transport": "internal",
+    "target": "internal.print",
+    "static_inputs": {
+      "prefix": "[DEBUG] "
+    }
   }
 }
 ```
